@@ -10,10 +10,10 @@ import {
   createSaw, createPortal, createPacket
 } from './obstacles.js';
 
-export const LEVEL_GOAL_DISTANCE = 48000;
+export const LEVEL_GOAL_DISTANCE = 16000;
 
 export const PATTERNS = [
-  // ── 1. Cube: Triple Spike Progression & Elevated Ledge ───────
+  // ── 1. Cube: Perimeter Ingress (Introductory Rhythm) ─────────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -22,32 +22,30 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Single spike with overhead guide packet
-    hazards.push(createSpike(startX + BLOCK_SIZE * 2, gy, 'malware'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 2, gy - BLOCK_SIZE * 2.2));
+    // Single spike 1 with guide packet above
+    hazards.push(createSpike(startX + BLOCK_SIZE * 3, gy, 'malware'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 3, gy - BLOCK_SIZE * 2.2));
 
-    // Double spike
-    hazards.push(createSpike(startX + BLOCK_SIZE * 6, gy, 'trojan'));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 7, gy, 'trojan'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 6.5, gy - BLOCK_SIZE * 2.3));
+    // Single spike 2
+    hazards.push(createSpike(startX + BLOCK_SIZE * 8, gy, 'malware'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 8, gy - BLOCK_SIZE * 2.2));
 
-    // Telegraphed Yellow Jump Pad right before the firewall platform
-    pads.push(createPad(startX + BLOCK_SIZE * 11, gy, 'yellow'));
+    // Double spike 3 & 4
+    hazards.push(createSpike(startX + BLOCK_SIZE * 13, gy, 'trojan'));
+    hazards.push(createSpike(startX + BLOCK_SIZE * 14, gy, 'trojan'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 13.5, gy - BLOCK_SIZE * 2.4));
 
-    // Elevated platform FW_01: 5 blocks wide with packet trail
-    blocks.push(createBlock(startX + BLOCK_SIZE * 13, gy - BLOCK_SIZE, BLOCK_SIZE * 5, BLOCK_SIZE, 'FW_01'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 14, gy - BLOCK_SIZE * 2.0));
-    packets.push(createPacket(startX + BLOCK_SIZE * 15.5, gy - BLOCK_SIZE * 2.0));
-    packets.push(createPacket(startX + BLOCK_SIZE * 17, gy - BLOCK_SIZE * 2.0));
+    // First safe elevated platform (FW_01) - 4 blocks wide, 1 block high
+    // Ample runway from double spike (14) to platform (18) = 4 blocks!
+    blocks.push(createBlock(startX + BLOCK_SIZE * 18, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'FW_01'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 19, gy - BLOCK_SIZE * 2.0));
+    packets.push(createPacket(startX + BLOCK_SIZE * 20.5, gy - BLOCK_SIZE * 2.0));
 
-    // Floor spikes beneath and trailing platform
-    hazards.push(createSpike(startX + BLOCK_SIZE * 14.5, gy, 'firewall'));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 19.5, gy, 'firewall'));
-
-    return { length: BLOCK_SIZE * 21, hazards, blocks, pads, orbs, packets, portals };
+    // Clean runway after dropping off platform
+    return { length: BLOCK_SIZE * 25, hazards, blocks, pads, orbs, packets, portals };
   },
 
-  // ── 2. Cube: Yellow Pad Launch onto Server Towers ────────────
+  // ── 2. Cube: Stepped Towers (Staircase Rhythm) ───────────────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -56,22 +54,55 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    pads.push(createPad(startX + BLOCK_SIZE * 2, gy, 'yellow'));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 4, gy, 'firewall'));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 5, gy, 'firewall'));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 6, gy, 'firewall'));
+    // Single spike on the floor
+    hazards.push(createSpike(startX + BLOCK_SIZE * 3, gy, 'malware'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 3, gy - BLOCK_SIZE * 2.2));
 
-    // Server platform tower
-    blocks.push(createBlock(startX + BLOCK_SIZE * 8, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 4, BLOCK_SIZE * 2, 'SRV_ALPHA'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 3.8));
-    packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 3.0));
-    packets.push(createPacket(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE * 3.0));
+    // Step 1: 1 block high (width 3)
+    blocks.push(createBlock(startX + BLOCK_SIZE * 6, gy - BLOCK_SIZE, BLOCK_SIZE * 3, BLOCK_SIZE, 'STEP_1'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 7.5, gy - BLOCK_SIZE * 2.0));
 
-    // Clear landing strip after tower
+    // Step 2: 2 blocks high (width 3) - hop from Step 1!
+    blocks.push(createBlock(startX + BLOCK_SIZE * 10, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 3, BLOCK_SIZE * 2, 'STEP_2'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 11.5, gy - BLOCK_SIZE * 3.0));
+
+    // Step 3: 1 block high (width 3) - hop down from Step 2!
+    blocks.push(createBlock(startX + BLOCK_SIZE * 14, gy - BLOCK_SIZE, BLOCK_SIZE * 3, BLOCK_SIZE, 'STEP_3'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 15.5, gy - BLOCK_SIZE * 2.0));
+
+    // Drop down to floor, single spike at 19
+    hazards.push(createSpike(startX + BLOCK_SIZE * 19, gy, 'firewall'));
+
+    return { length: BLOCK_SIZE * 23, hazards, blocks, pads, orbs, packets, portals };
+  },
+
+  // ── 3. Cube: Yellow Pad High Launch ─────────────────────────
+  (startX, gy, cy) => {
+    const hazards = [];
+    const blocks = [];
+    const pads = [];
+    const orbs = [];
+    const packets = [];
+    const portals = [];
+
+    // Yellow Jump Pad on the ground
+    pads.push(createPad(startX + BLOCK_SIZE * 3, gy, 'yellow'));
+
+    // Triple spike hazard on floor under the arc
+    hazards.push(createSpike(startX + BLOCK_SIZE * 5, gy, 'trojan'));
+    hazards.push(createSpike(startX + BLOCK_SIZE * 6, gy, 'trojan'));
+    hazards.push(createSpike(startX + BLOCK_SIZE * 7, gy, 'trojan'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 5.5, gy - BLOCK_SIZE * 3.2));
+
+    // Pad launches cleanly over the 3 spikes, lands on floor at 9
+    // Elevated cache platform at 11 (height 1 block, width 4)
+    blocks.push(createBlock(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'CACHE_01'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 12.5, gy - BLOCK_SIZE * 2.0));
+
     return { length: BLOCK_SIZE * 18, hazards, blocks, pads, orbs, packets, portals };
   },
 
-  // ── 3. PHASE 2: SHIP MODE PORTAL & ROCKET CAVERN ───────────
+  // ── 4. PHASE 2: SHIP MODE PORTAL & ROCKET CAVERN ───────────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -80,40 +111,37 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Real Geometry Dash Ship Entry:
-    // 1. Launch pad on ground vaults the cube into mid-air
+    // Vault into mid-air with yellow jump pad
     pads.push(createPad(startX + BLOCK_SIZE * 3, gy, 'yellow'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 4.5, gy - BLOCK_SIZE * 2.0));
 
-    // 2. Mid-air Magenta Ship Portal at apex of jump arc
-    portals.push(createPortal(startX + BLOCK_SIZE * 6, gy - BLOCK_SIZE * 1.5, 'mode_ship'));
+    // Magenta Ship Portal in mid-air at apex
+    portals.push(createPortal(startX + BLOCK_SIZE * 6, gy - BLOCK_SIZE * 2.0, 'mode_ship'));
 
-    // 3. Wide-open introductory flight corridor: NO spikes for 12 blocks!
-    // Centered packet trail lets player feel thruster controls
+    // 12 blocks of clear open cavern! Zero spikes on floor or ceiling!
     packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 2.8));
     packets.push(createPacket(startX + BLOCK_SIZE * 12, gy - BLOCK_SIZE * 2.8));
     packets.push(createPacket(startX + BLOCK_SIZE * 15, gy - BLOCK_SIZE * 2.8));
 
-    // 4. Obstacle 1: Low Server Pillar (thrust up to clear)
+    // Low obstacle: 2-block high server pillar (thrust up to clear)
     blocks.push(createBlock(startX + BLOCK_SIZE * 18, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 2.5, BLOCK_SIZE * 2, 'NET_PILLAR'));
     packets.push(createPacket(startX + BLOCK_SIZE * 19.2, gy - BLOCK_SIZE * 3.8));
 
-    // 5. Obstacle 2: Hanging Ceiling Conduit (release to glide under)
+    // High obstacle: ceiling conduit (glide down to clear)
     blocks.push(createBlock(startX + BLOCK_SIZE * 25, cy, BLOCK_SIZE * 2.5, BLOCK_SIZE * 2.2, 'TOP_PIPE'));
     packets.push(createPacket(startX + BLOCK_SIZE * 26.2, gy - BLOCK_SIZE * 1.6));
 
-    // 6. Obstacle 3: Central Sawblade (choice of high or low route)
+    // Floating sawblade (mid route choice)
     hazards.push(createSaw(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 2.7, 26));
     packets.push(createPacket(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 4.2));
     packets.push(createPacket(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 1.4));
 
-    // 7. Exit: Green Cube Portal in mid-air
-    portals.push(createPortal(startX + BLOCK_SIZE * 38, gy - BLOCK_SIZE * 1.5, 'mode_cube'));
+    // Exit portal back to Cube
+    portals.push(createPortal(startX + BLOCK_SIZE * 38, gy - BLOCK_SIZE * 2.0, 'mode_cube'));
 
     return { length: BLOCK_SIZE * 42, hazards, blocks, pads, orbs, packets, portals };
   },
 
-  // ── 4. GREEN DASH ORB SUPER-STREAK ──────────────────────────
+  // ── 5. GREEN DASH ORB CHASM ─────────────────────────────────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -123,24 +151,24 @@ export const PATTERNS = [
     const portals = [];
 
     // Safe entry runway for cube landing from 0 to 4
-    // Green Dash Orb in mid-air: Hold jump to streak straight across!
-    orbs.push(createOrb(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 2, 'dash_green'));
+    // Green Dash Orb in mid-air at 4: Hold jump to streak straight across!
+    orbs.push(createOrb(startX + BLOCK_SIZE * 4, gy - BLOCK_SIZE * 2, 'dash_green'));
 
-    // Giant chasm with 5 spikes on the floor under the dash
-    for (let i = 6; i <= 10; i++) {
+    // Chasm of 5 spikes on the floor under the dash
+    for (let i = 5; i <= 9; i++) {
       hazards.push(createSpike(startX + BLOCK_SIZE * i, gy, 'trojan'));
     }
 
-    packets.push(createPacket(startX + BLOCK_SIZE * 7, gy - BLOCK_SIZE * 2));
-    packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 2));
+    packets.push(createPacket(startX + BLOCK_SIZE * 6, gy - BLOCK_SIZE * 2));
+    packets.push(createPacket(startX + BLOCK_SIZE * 8, gy - BLOCK_SIZE * 2));
 
     // Landing block platform
-    blocks.push(createBlock(startX + BLOCK_SIZE * 12, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'DASH_END'));
+    blocks.push(createBlock(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'DASH_END'));
 
-    return { length: BLOCK_SIZE * 19, hazards, blocks, pads, orbs, packets, portals };
+    return { length: BLOCK_SIZE * 18, hazards, blocks, pads, orbs, packets, portals };
   },
 
-  // ── 5. PHASE 3: SPEED GATE (2X OVERDRIVE) & ORB CHAIN ──────
+  // ── 6. PHASE 3: SPEED GATE (2X OVERDRIVE) & ORB CHAIN ──────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -149,27 +177,26 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // 2x Speed Gate!
+    // 2x Speed Gate
     portals.push(createPortal(startX + BLOCK_SIZE * 2, gy, 'speed_2x'));
 
-    // Sawblade hazard with yellow orb
-    hazards.push(createSaw(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 0.8, 30));
-    orbs.push(createOrb(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 2.5, 'yellow'));
-
-    // Pink orb in rapid sequence
-    hazards.push(createSpike(startX + BLOCK_SIZE * 9, gy, 'trojan'));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 10, gy, 'trojan'));
-    orbs.push(createOrb(startX + BLOCK_SIZE * 9.5, gy - BLOCK_SIZE * 2.2, 'pink'));
-
-    // Elevated landing
-    blocks.push(createBlock(startX + BLOCK_SIZE * 13, gy - BLOCK_SIZE * 1.5, BLOCK_SIZE * 4, BLOCK_SIZE * 1.5, 'SPEED_HUB'));
+    // Yellow orb over single spike
+    hazards.push(createSpike(startX + BLOCK_SIZE * 5, gy, 'firewall'));
+    orbs.push(createOrb(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 2.2, 'yellow'));
     packets.push(createPacket(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 3.2));
-    packets.push(createPacket(startX + BLOCK_SIZE * 9.5, gy - BLOCK_SIZE * 3.0));
 
-    return { length: BLOCK_SIZE * 19, hazards, blocks, pads, orbs, packets, portals };
+    // Pink orb over single spike
+    hazards.push(createSpike(startX + BLOCK_SIZE * 9, gy, 'trojan'));
+    orbs.push(createOrb(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 2.0, 'pink'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 3.0));
+
+    // Elevated landing hub
+    blocks.push(createBlock(startX + BLOCK_SIZE * 12, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'SPEED_HUB'));
+
+    return { length: BLOCK_SIZE * 18, hazards, blocks, pads, orbs, packets, portals };
   },
 
-  // ── 6. PHASE 4: THE WAVE (DART ZIG-ZAG CORRIDOR) ────────────
+  // ── 7. PHASE 4: THE WAVE (DART ZIG-ZAG CORRIDOR) ────────────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -178,30 +205,26 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Transform into The Wave! (Cyan Portal)
     portals.push(createPortal(startX + BLOCK_SIZE * 2, gy, 'mode_wave'));
 
-    // High & Low corridor blocks designed for 45° zigzagging!
-    // Zigzag up
+    // Wave Zigzag corridor:
     blocks.push(createBlock(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 1.5, BLOCK_SIZE * 3, BLOCK_SIZE * 1.5, 'WAVE_BOT_1'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 7, gy - BLOCK_SIZE * 3.2));
+    packets.push(createPacket(startX + BLOCK_SIZE * 7, gy - BLOCK_SIZE * 3.0));
 
-    // Zigzag down
     blocks.push(createBlock(startX + BLOCK_SIZE * 9, cy, BLOCK_SIZE * 3, BLOCK_SIZE * 2, 'WAVE_TOP_1'));
-    hazards.push(createSaw(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE * 1.2, 26));
+    packets.push(createPacket(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE * 1.8));
 
-    // Zigzag up again
-    blocks.push(createBlock(startX + BLOCK_SIZE * 14, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 3, BLOCK_SIZE * 2, 'WAVE_BOT_2'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 15, gy - BLOCK_SIZE * 3.8));
+    blocks.push(createBlock(startX + BLOCK_SIZE * 13, gy - BLOCK_SIZE * 1.5, BLOCK_SIZE * 3, BLOCK_SIZE * 1.5, 'WAVE_BOT_2'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 15, gy - BLOCK_SIZE * 3.0));
 
-    // Exit back to Cube mode
-    portals.push(createPortal(startX + BLOCK_SIZE * 19, gy, 'mode_cube'));
-    portals.push(createPortal(startX + BLOCK_SIZE * 19, gy, 'speed_1x'));
+    // Exit portal
+    portals.push(createPortal(startX + BLOCK_SIZE * 18, gy, 'mode_cube'));
+    portals.push(createPortal(startX + BLOCK_SIZE * 18, gy, 'speed_1x'));
 
-    return { length: BLOCK_SIZE * 23, hazards, blocks, pads, orbs, packets, portals };
+    return { length: BLOCK_SIZE * 22, hazards, blocks, pads, orbs, packets, portals };
   },
 
-  // ── 7. PHASE 5: QUANTUM GRAVITY INVERSION TUNNEL ───────────
+  // ── 8. PHASE 5: QUANTUM GRAVITY INVERSION TUNNEL ───────────
   (startX, gy, cy) => {
     const hazards = [];
     const blocks = [];
@@ -210,20 +233,21 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Blue Gravity Portal (Inverts to ceiling!)
+    // Blue Gravity Portal (flips to ceiling)
     portals.push(createPortal(startX + BLOCK_SIZE * 2, gy, 'gravity_flip'));
 
-    // Ceiling spikes & blocks
-    hazards.push(createSpike(startX + BLOCK_SIZE * 6, cy, 'malware', -1));
-    blocks.push(createBlock(startX + BLOCK_SIZE * 9, cy, BLOCK_SIZE * 3, BLOCK_SIZE, 'CEIL_CORE'));
+    // Ceiling runway from 2 to 6
+    // Ceiling block
+    blocks.push(createBlock(startX + BLOCK_SIZE * 6, cy, BLOCK_SIZE * 3, BLOCK_SIZE, 'CEIL_CORE'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 7.5, cy + BLOCK_SIZE * 1.8));
 
-    // Mid-air Blue Orb on ceiling flips back down!
-    orbs.push(createOrb(startX + BLOCK_SIZE * 13, cy + BLOCK_SIZE * 2.2, 'blue'));
+    // Blue Orb flips back to floor
+    orbs.push(createOrb(startX + BLOCK_SIZE * 11, cy + BLOCK_SIZE * 2.2, 'blue'));
 
     // Orange portal restoring normal floor gravity
-    portals.push(createPortal(startX + BLOCK_SIZE * 16, cy + 90, 'gravity_normal'));
+    portals.push(createPortal(startX + BLOCK_SIZE * 14, gy, 'gravity_normal'));
 
-    return { length: BLOCK_SIZE * 19, hazards, blocks, pads, orbs, packets, portals };
+    return { length: BLOCK_SIZE * 18, hazards, blocks, pads, orbs, packets, portals };
   }
 ];
 

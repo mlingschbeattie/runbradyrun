@@ -171,12 +171,13 @@ export function resolveBlockCollisions(player, tiles) {
       const prevBottom = player.prevY + player.h;
       const currBottom = py2;
 
-      // 1. Landing on top from above (vy >= -1.0 so apex or descending)
-      const isLandedFromAbove = prevBottom <= ty1 + 14 && currBottom >= ty1 && player.vy >= -1.0;
-      // 2. Step-up corner forgiveness: only for non-floor elevated platforms!
-      const isCornerStepUp = tile.type !== 'floor' && currBottom >= ty1 - 8 && currBottom <= ty1 + 14 && player.vy >= -3.0;
+      // 1. Landing on top of block:
+      // If player's feet reached or passed the block top (currBottom >= ty1)
+      // and they entered from above or within 20px of the top edge:
+      const enteredFromTop = prevBottom <= ty1 + 20;
+      const isAboveLedge = currBottom <= ty1 + 20;
 
-      if (isLandedFromAbove || isCornerStepUp) {
+      if (currBottom >= ty1 && (enteredFromTop || isAboveLedge)) {
         player.y = ty1 - player.h;
         player.vy = 0;
         player.onGround = true;
@@ -184,8 +185,8 @@ export function resolveBlockCollisions(player, tiles) {
         continue;
       }
 
-      // Hitting side wall of block: ONLY fatal if feet are genuinely below corner tolerance!
-      const vOverlap = py2 > ty1 + 14 && py1 < ty2 - 4;
+      // Hitting side wall of block: ONLY fatal if feet are genuinely below the 20px ledge tolerance!
+      const vOverlap = py2 > ty1 + 20 && py1 < ty2 - 4;
       if (vOverlap) {
         return { crashed: true, reason: 'wall', tile };
       }
@@ -194,10 +195,10 @@ export function resolveBlockCollisions(player, tiles) {
       const prevTop = player.prevY;
       const currTop = py1;
 
-      const isLandedFromBelow = prevTop >= ty2 - 14 && currTop <= ty2 && player.vy <= 1.0;
-      const isCornerStepDown = tile.type !== 'floor' && currTop <= ty2 + 8 && currTop >= ty2 - 14 && player.vy <= 3.0;
+      const enteredFromBottom = prevTop >= ty2 - 20;
+      const isBelowLedge = currTop >= ty2 - 20;
 
-      if (isLandedFromBelow || isCornerStepDown) {
+      if (currTop <= ty2 && (enteredFromBottom || isBelowLedge)) {
         player.y = ty2;
         player.vy = 0;
         player.onGround = true;
@@ -205,7 +206,7 @@ export function resolveBlockCollisions(player, tiles) {
         continue;
       }
 
-      const vOverlap = py2 > ty1 + 4 && py1 < ty2 - 14;
+      const vOverlap = py2 > ty1 + 4 && py1 < ty2 - 20;
       if (vOverlap) {
         return { crashed: true, reason: 'wall', tile };
       }
