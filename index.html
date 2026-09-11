@@ -2,21 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Run Brady Run</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Run Brady Run // Cyber Infiltration</title>
   <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #060913;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Chakra Petch', sans-serif;
+    }
     body {
-      background: #0a0f1e;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
     }
     canvas {
       display: block;
-      image-rendering: pixelated;
+      image-rendering: auto;
+      outline: none;
     }
   </style>
 </head>
