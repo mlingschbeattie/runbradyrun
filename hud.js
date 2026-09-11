@@ -492,111 +492,200 @@ export function drawCrashScreen(ctx, lastObstacle, CANVAS_W, CANVAS_H, attempts,
   ctx.save();
   hudClickTargets.length = 0;
 
-  ctx.fillStyle = 'rgba(4, 7, 16, 0.94)';
+  // 1. Semi-transparent dramatic vignette (world stays visible underneath)
+  const overlayGrad = ctx.createRadialGradient(CANVAS_W / 2, CANVAS_H / 2, 80, CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.75);
+  overlayGrad.addColorStop(0, 'rgba(4, 7, 18, 0.72)');
+  overlayGrad.addColorStop(1, 'rgba(2, 4, 10, 0.90)');
+  ctx.fillStyle = overlayGrad;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // Red accent top rail
+  // Red accent top glow line
   ctx.fillStyle = '#ff0055';
   ctx.shadowColor = '#ff0055';
-  ctx.shadowBlur = 18;
-  ctx.fillRect(0, 0, CANVAS_W, 3);
+  ctx.shadowBlur = 16;
+  ctx.fillRect(0, 0, CANVAS_W, 2);
   ctx.shadowBlur = 0;
 
-  // Title
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '900 38px "Orbitron", sans-serif';
-  ctx.fillStyle = '#ff0055';
-  ctx.shadowColor = '#ff0055';
-  ctx.shadowBlur = 24;
-  ctx.fillText('BREACH DETECTED', CANVAS_W / 2, CANVAS_H / 2 - 135);
-  ctx.shadowBlur = 0;
 
-  ctx.font = '700 14px "Chakra Petch", monospace';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText(`ATTEMPT ${attempts} FAILED  •  PROGRESS: ${percent}%  •  PACKETS: ${score} ◆`, CANVAS_W / 2, CANVAS_H / 2 - 95);
+  const centerY = CANVAS_H / 2;
 
-  // Threat Intel Box
-  if (lastObstacle && lastObstacle.tips) {
-    const tipBoxW = Math.min(620, CANVAS_W - 40);
-    const tipBoxH = 75;
-    const tipBoxX = CANVAS_W / 2 - tipBoxW / 2;
-    const tipBoxY = CANVAS_H / 2 - 70;
-
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-    ctx.fillRect(tipBoxX, tipBoxY, tipBoxW, tipBoxH);
-    ctx.strokeStyle = '#ff0055';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(tipBoxX, tipBoxY, tipBoxW, tipBoxH);
-
-    ctx.fillStyle = '#ff0055';
-    ctx.font = '900 11px "Orbitron", monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('[ THREAT INTEL // COMPTIA SECURITY+ ]', tipBoxX + 16, tipBoxY + 16);
-
-    const tip = lastObstacle.tips[lastObstacle.tipIndex || 0] || 'Network anomaly caused packet loss.';
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = '500 13px "Chakra Petch", monospace';
-    wrapText(tip, tipBoxW - 32, ctx, '13px "Chakra Petch"').forEach((line, i) => {
-      ctx.fillText(line, tipBoxX + 16, tipBoxY + 36 + i * 18);
-    });
-  }
-
-  // 1. Instant Retry Button
-  const retryBtnY = CANVAS_H / 2 + 25;
-  hudClickTargets.push({ id: 'btn_retry', x: CANVAS_W / 2 - 190, y: retryBtnY - 18, w: 380, h: 38 });
-  ctx.fillStyle = 'rgba(0, 240, 255, 0.15)';
-  ctx.fillRect(CANVAS_W / 2 - 190, retryBtnY - 18, 380, 38);
-  ctx.strokeStyle = '#00f0ff';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(CANVAS_W / 2 - 190, retryBtnY - 18, 380, 38);
-
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 14px "Orbitron", sans-serif';
-  ctx.fillText('PRESS SPACE OR CLICK TO RETRY', CANVAS_W / 2, retryBtnY + 2);
-
-  // 2. Bypass Protocol Quiz Button
-  const quizBtnY = CANVAS_H / 2 + 75;
-  hudClickTargets.push({ id: 'btn_quiz', x: CANVAS_W / 2 - 210, y: quizBtnY - 18, w: 420, h: 40 });
-  ctx.fillStyle = 'rgba(0, 255, 136, 0.22)';
-  ctx.fillRect(CANVAS_W / 2 - 210, quizBtnY - 18, 420, 40);
-  ctx.strokeStyle = '#00ff88';
-  ctx.lineWidth = 2;
-  ctx.shadowColor = '#00ff88';
-  ctx.shadowBlur = 12;
-  ctx.strokeRect(CANVAS_W / 2 - 210, quizBtnY - 18, 420, 40);
-  ctx.shadowBlur = 0;
-
+  // 2. Bold Progress Percentage
   ctx.fillStyle = '#00ff88';
-  ctx.font = '900 13px "Orbitron", sans-serif';
-  ctx.fillText('[ Q ] BYPASS PROTOCOL (REVIVE W/ SHIELD)', CANVAS_W / 2, quizBtnY + 2);
+  ctx.font = '900 54px "Orbitron", sans-serif';
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 24;
+  ctx.fillText(`${percent}%`, CANVAS_W / 2, centerY - 105);
+  ctx.shadowBlur = 0;
 
-  // 3. View Leaderboard Button
-  const ldrBtnY = CANVAS_H / 2 + 125;
-  hudClickTargets.push({ id: 'btn_view_leaderboard', x: CANVAS_W / 2 - 160, y: ldrBtnY - 16, w: 320, h: 34 });
-  ctx.fillStyle = 'rgba(255, 208, 0, 0.18)';
-  ctx.fillRect(CANVAS_W / 2 - 160, ldrBtnY - 16, 320, 34);
+  // 3. Glowing Progress Bar
+  const barW = Math.min(360, CANVAS_W - 80);
+  const barH = 8;
+  const barX = CANVAS_W / 2 - barW / 2;
+  const barY = centerY - 68;
+
+  // Bar track
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+  ctx.fillRect(barX, barY, barW, barH);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, barW, barH);
+
+  // Bar fill
+  const fillW = Math.max(4, (percent / 100) * barW);
+  const barGrad = ctx.createLinearGradient(barX, 0, barX + fillW, 0);
+  barGrad.addColorStop(0, '#00f0ff');
+  barGrad.addColorStop(1, '#00ff88');
+  ctx.fillStyle = barGrad;
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 10;
+  ctx.fillRect(barX, barY, fillW, barH);
+  ctx.shadowBlur = 0;
+
+  // Runner tip indicator
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(barX + fillW, barY + barH / 2, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Attempt & Packet Counter Readout
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '700 12px "Orbitron", monospace';
+  ctx.fillText(`ATTEMPT ${attempts}   •   PACKETS: ${score} ◆`, CANVAS_W / 2, centerY - 45);
+
+  // 5. Geometry Dash Style 3 Circular Buttons
+  const pulse = Math.sin(Date.now() / 280) * 0.06 + 1.0;
+  const btnY = centerY + 24;
+
+  // A. CENTER: GIANT CIRCULAR RETRY BUTTON (↺)
+  const retryR = 46 * pulse;
+  const retryX = CANVAS_W / 2;
+  hudClickTargets.push({ id: 'btn_retry', x: retryX - retryR, y: btnY - retryR, w: retryR * 2, h: retryR * 2 });
+
+  // Outer glow
+  ctx.fillStyle = '#00ff88';
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 24 * pulse;
+  ctx.beginPath();
+  ctx.arc(retryX, btnY, retryR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Dark inner circle
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#061a12';
+  ctx.beginPath();
+  ctx.arc(retryX, btnY, retryR - 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ring border
+  ctx.strokeStyle = '#00ff88';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Draw smooth circular retry arrow (↺)
+  ctx.save();
+  ctx.translate(retryX, btnY);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(0, 0, retryR * 0.44, -Math.PI * 0.75, Math.PI * 0.85);
+  ctx.stroke();
+
+  // Arrowhead at top-left
+  ctx.fillStyle = '#ffffff';
+  const arrowX = Math.cos(-Math.PI * 0.75) * (retryR * 0.44);
+  const arrowY = Math.sin(-Math.PI * 0.75) * (retryR * 0.44);
+  ctx.beginPath();
+  ctx.moveTo(arrowX - 8, arrowY - 2);
+  ctx.lineTo(arrowX + 4, arrowY - 10);
+  ctx.lineTo(arrowX + 2, arrowY + 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // B. LEFT: CIRCULAR MENU BUTTON (🏠)
+  const leftX = CANVAS_W / 2 - 105;
+  const sideR = 30;
+  hudClickTargets.push({ id: 'btn_back_to_menu', x: leftX - sideR, y: btnY - sideR, w: sideR * 2, h: sideR * 2 });
+
+  ctx.fillStyle = '#0c162d';
+  ctx.beginPath();
+  ctx.arc(leftX, btnY, sideR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#00f0ff';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Home icon
+  ctx.fillStyle = '#00f0ff';
+  ctx.font = '20px sans-serif';
+  ctx.fillText('🏠', leftX, btnY + 1);
+
+  // C. RIGHT: CIRCULAR LEADERBOARD BUTTON (🏆)
+  const rightX = CANVAS_W / 2 + 105;
+  hudClickTargets.push({ id: 'btn_view_leaderboard', x: rightX - sideR, y: btnY - sideR, w: sideR * 2, h: sideR * 2 });
+
+  ctx.fillStyle = '#1e1806';
+  ctx.beginPath();
+  ctx.arc(rightX, btnY, sideR, 0, Math.PI * 2);
+  ctx.fill();
   ctx.strokeStyle = '#ffd000';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(CANVAS_W / 2 - 160, ldrBtnY - 16, 320, 34);
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#ffd000';
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
 
   ctx.fillStyle = '#ffd000';
-  ctx.font = '900 12px "Orbitron", sans-serif';
-  ctx.fillText('🏆 [ L ] VIEW LEADERBOARD', CANVAS_W / 2, ldrBtnY + 2);
+  ctx.font = '20px sans-serif';
+  ctx.fillText('🏆', rightX, btnY + 1);
 
-  // 4. Back to Menu
-  const menuBtnY = CANVAS_H / 2 + 172;
-  hudClickTargets.push({ id: 'btn_back_to_menu', x: CANVAS_W / 2 - 120, y: menuBtnY - 14, w: 240, h: 28 });
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.fillRect(CANVAS_W / 2 - 120, menuBtnY - 14, 240, 28);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(CANVAS_W / 2 - 120, menuBtnY - 14, 240, 28);
-
-  ctx.fillStyle = '#94a3b8';
+  // 6. Subtitle Prompt
+  ctx.fillStyle = '#64748b';
   ctx.font = '700 11px "Orbitron", sans-serif';
-  ctx.fillText('MAIN MENU', CANVAS_W / 2, menuBtnY + 2);
+  ctx.fillText('PRESS SPACE OR TAP TO RETRY', CANVAS_W / 2, btnY + 58);
+
+  // 7. Sleek CompTIA Bypass Shield Chip (Optional Revive)
+  const quizChipW = 260;
+  const quizChipH = 32;
+  const quizChipX = CANVAS_W / 2 - quizChipW / 2;
+  const quizChipY = btnY + 76;
+  hudClickTargets.push({ id: 'btn_quiz', x: quizChipX, y: quizChipY, w: quizChipW, h: quizChipH });
+
+  ctx.fillStyle = 'rgba(0, 255, 136, 0.12)';
+  ctx.fillRect(quizChipX, quizChipY, quizChipW, quizChipH);
+  ctx.strokeStyle = 'rgba(0, 255, 136, 0.45)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(quizChipX, quizChipY, quizChipW, quizChipH);
+
+  ctx.fillStyle = '#00ff88';
+  ctx.font = '800 11px "Orbitron", sans-serif';
+  ctx.fillText('[ Q ] 🛡️ REVIVE WITH SHIELD', CANVAS_W / 2, quizChipY + quizChipH / 2);
+
+  // 8. Bottom Ticker: Subtle CompTIA Security+ Intel
+  if (lastObstacle && lastObstacle.tips) {
+    const tip = lastObstacle.tips[lastObstacle.tipIndex || 0] || 'Network anomaly caused packet loss.';
+    const tickerH = 28;
+    const tickerY = CANVAS_H - tickerH;
+
+    ctx.fillStyle = 'rgba(10, 16, 32, 0.88)';
+    ctx.fillRect(0, tickerY, CANVAS_W, tickerH);
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, tickerY);
+    ctx.lineTo(CANVAS_W, tickerY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '500 12px "Chakra Petch", monospace';
+    ctx.fillText(`💡 SECURITY INTEL: ${tip}`, CANVAS_W / 2, tickerY + tickerH / 2);
+  }
 
   ctx.restore();
 }
@@ -1069,54 +1158,106 @@ export function drawVictoryScreen(ctx, CANVAS_W, CANVAS_H, score, attempts, stud
   ctx.font = '900 13px "Orbitron", monospace';
   ctx.fillText(finalRank ? `★ RANKED #${finalRank} ON BEATTIETECH LEADERBOARD ★` : '★ TELEMETRY RECORDED TO BEATTIETECH NETWORK ★', CANVAS_W / 2, cardY + 182);
 
-  // Action Buttons
-  const btnY = CANVAS_H * 0.72;
-  const btnW = 190;
-  const btnH = 42;
+  // Geometry Dash Style 3 Circular Buttons
+  const pulse = Math.sin(Date.now() / 280) * 0.06 + 1.0;
+  const btnY = CANVAS_H * 0.77;
 
-  // 1. View Leaderboard
-  const ldrX = CANVAS_W / 2 - btnW - 12;
-  hudClickTargets.push({ id: 'btn_view_leaderboard', x: ldrX, y: btnY, w: btnW, h: btnH });
-  ctx.fillStyle = 'rgba(255, 208, 0, 0.22)';
-  ctx.fillRect(ldrX, btnY, btnW, btnH);
+  // A. CENTER: GIANT CIRCULAR REPLAY BUTTON (↺)
+  const retryR = 44 * pulse;
+  const retryX = CANVAS_W / 2;
+  hudClickTargets.push({ id: 'btn_retry', x: retryX - retryR, y: btnY - retryR, w: retryR * 2, h: retryR * 2 });
+
+  // Outer glow
+  ctx.fillStyle = '#00ff88';
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 24 * pulse;
+  ctx.beginPath();
+  ctx.arc(retryX, btnY, retryR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Dark inner circle
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#061a12';
+  ctx.beginPath();
+  ctx.arc(retryX, btnY, retryR - 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ring border
+  ctx.strokeStyle = '#00ff88';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Draw circular retry arrow (↺)
+  ctx.save();
+  ctx.translate(retryX, btnY);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(0, 0, retryR * 0.44, -Math.PI * 0.75, Math.PI * 0.85);
+  ctx.stroke();
+
+  // Arrowhead at top-left
+  ctx.fillStyle = '#ffffff';
+  const arrowX = Math.cos(-Math.PI * 0.75) * (retryR * 0.44);
+  const arrowY = Math.sin(-Math.PI * 0.75) * (retryR * 0.44);
+  ctx.beginPath();
+  ctx.moveTo(arrowX - 8, arrowY - 2);
+  ctx.lineTo(arrowX + 4, arrowY - 10);
+  ctx.lineTo(arrowX + 2, arrowY + 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // B. LEFT: CIRCULAR MENU BUTTON (🏠)
+  const leftX = CANVAS_W / 2 - 100;
+  const sideR = 30;
+  hudClickTargets.push({ id: 'btn_back_to_menu', x: leftX - sideR, y: btnY - sideR, w: sideR * 2, h: sideR * 2 });
+
+  ctx.fillStyle = '#0c162d';
+  ctx.beginPath();
+  ctx.arc(leftX, btnY, sideR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#00f0ff';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Home icon
+  ctx.fillStyle = '#00f0ff';
+  ctx.font = '20px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🏠', leftX, btnY + 1);
+
+  // C. RIGHT: CIRCULAR LEADERBOARD BUTTON (🏆)
+  const rightX = CANVAS_W / 2 + 100;
+  hudClickTargets.push({ id: 'btn_view_leaderboard', x: rightX - sideR, y: btnY - sideR, w: sideR * 2, h: sideR * 2 });
+
+  ctx.fillStyle = '#1e1806';
+  ctx.beginPath();
+  ctx.arc(rightX, btnY, sideR, 0, Math.PI * 2);
+  ctx.fill();
   ctx.strokeStyle = '#ffd000';
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.shadowColor = '#ffd000';
   ctx.shadowBlur = 10;
-  ctx.strokeRect(ldrX, btnY, btnW, btnH);
+  ctx.stroke();
   ctx.shadowBlur = 0;
+
   ctx.fillStyle = '#ffd000';
-  ctx.font = '900 13px "Orbitron", sans-serif';
-  ctx.fillText('🏆 LEADERBOARD', ldrX + btnW / 2, btnY + btnH / 2);
+  ctx.font = '20px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🏆', rightX, btnY + 1);
 
-  // 2. Play Again
-  const playX = CANVAS_W / 2 + 12;
-  hudClickTargets.push({ id: 'btn_retry', x: playX, y: btnY, w: btnW, h: btnH });
-  ctx.fillStyle = 'rgba(0, 255, 136, 0.22)';
-  ctx.fillRect(playX, btnY, btnW, btnH);
-  ctx.strokeStyle = '#00ff88';
-  ctx.lineWidth = 1.5;
-  ctx.shadowColor = '#00ff88';
-  ctx.shadowBlur = 10;
-  ctx.strokeRect(playX, btnY, btnW, btnH);
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#00ff88';
-  ctx.fillText('↺ PLAY AGAIN', playX + btnW / 2, btnY + btnH / 2);
-
-  // 3. Back to Menu
-  const menuY = btnY + 56;
-  const menuW = 160;
-  const menuH = 34;
-  const menuX = CANVAS_W / 2 - menuW / 2;
-  hudClickTargets.push({ id: 'btn_back_to_menu', x: menuX, y: menuY, w: menuW, h: menuH });
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-  ctx.fillRect(menuX, menuY, menuW, menuH);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(menuX, menuY, menuW, menuH);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '700 12px "Orbitron", sans-serif';
-  ctx.fillText('MAIN MENU', CANVAS_W / 2, menuY + menuH / 2);
+  // Subtitle prompt
+  ctx.fillStyle = '#64748b';
+  ctx.font = '700 11px "Orbitron", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('PRESS SPACE OR TAP TO REPLAY', CANVAS_W / 2, btnY + 56);
 
   ctx.restore();
 }
