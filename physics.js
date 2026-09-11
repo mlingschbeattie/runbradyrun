@@ -27,6 +27,11 @@ export function updatePlayerPhysics(player, dt, isHoldingJump, effectiveSpeed) {
     player.vy = 0;
     player.angle = 0;
     player.onGround = false;
+
+    // Geometry Dash Dash-Stop: auto-release dash once chasm is crossed (~280px)
+    if (player.dashStartX && player.x - player.dashStartX > 280) {
+      player.isDashing = false;
+    }
     return;
   }
 
@@ -177,10 +182,11 @@ export function resolveBlockCollisions(player, tiles) {
       const enteredFromTop = prevBottom <= ty1 + 20;
       const isAboveLedge = currBottom <= ty1 + 20;
 
-      if (currBottom >= ty1 && (enteredFromTop || isAboveLedge)) {
+      if (currBottom >= ty1 && (enteredFromTop || isAboveLedge || player.isDashing)) {
         player.y = ty1 - player.h;
         player.vy = 0;
         player.onGround = true;
+        player.isDashing = false; // Landing safely exits dash mode
         player.angle = snapAngle(player.angle);
         continue;
       }
@@ -272,6 +278,9 @@ export function checkOrbInteractions(player, orbs) {
         player.isDashing = true;
         player.vy = 0;
         player.angle = 0;
+        // Lock player Y to exact orb centerline so trajectory is laser-precise
+        player.y = (orb.y + orb.h / 2) - player.h / 2;
+        player.dashStartX = player.x;
       } else if (orb.orbType === 'blue') {
         player.gravityDir = grav === 1 ? -1 : 1;
         player.vy = (grav === 1 ? 11 : -11);

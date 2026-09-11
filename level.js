@@ -122,16 +122,16 @@ export const PATTERNS = [
     packets.push(createPacket(startX + BLOCK_SIZE * 12, gy - BLOCK_SIZE * 2.8));
     packets.push(createPacket(startX + BLOCK_SIZE * 15, gy - BLOCK_SIZE * 2.8));
 
-    // Low obstacle: 2-block high server pillar (thrust up to clear)
-    blocks.push(createBlock(startX + BLOCK_SIZE * 18, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 2.5, BLOCK_SIZE * 2, 'NET_PILLAR'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 19.2, gy - BLOCK_SIZE * 3.8));
+    // Low obstacle: gentle 1.2-block server pillar (plenty of flight headroom)
+    blocks.push(createBlock(startX + BLOCK_SIZE * 18, gy - BLOCK_SIZE * 1.2, BLOCK_SIZE * 2.5, BLOCK_SIZE * 1.2, 'NET_PILLAR'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 19.2, gy - BLOCK_SIZE * 2.8));
 
-    // High obstacle: ceiling conduit (glide down to clear)
-    blocks.push(createBlock(startX + BLOCK_SIZE * 25, cy, BLOCK_SIZE * 2.5, BLOCK_SIZE * 2.2, 'TOP_PIPE'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 26.2, gy - BLOCK_SIZE * 1.6));
+    // High obstacle: gentle ceiling conduit (plenty of floor clearance)
+    blocks.push(createBlock(startX + BLOCK_SIZE * 25, cy, BLOCK_SIZE * 2.5, BLOCK_SIZE * 1.2, 'TOP_PIPE'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 26.2, gy - BLOCK_SIZE * 2.0));
 
     // Floating sawblade (mid route choice)
-    hazards.push(createSaw(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 2.7, 26));
+    hazards.push(createSaw(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 2.7, 24));
     packets.push(createPacket(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 4.2));
     packets.push(createPacket(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 1.4));
 
@@ -150,20 +150,23 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Safe entry runway for cube landing from 0 to 4
-    // Green Dash Orb in mid-air at 4: Hold jump to streak straight across!
-    orbs.push(createOrb(startX + BLOCK_SIZE * 4, gy - BLOCK_SIZE * 2, 'dash_green'));
+    // Safe entry runway from 0 to 3
+    // Green Dash Orb in mid-air at 3.5: Jump & hold to streak straight across the chasm!
+    orbs.push(createOrb(startX + BLOCK_SIZE * 3.5, gy - BLOCK_SIZE * 2.0, 'dash_green'));
 
-    // Chasm of 5 spikes on the floor under the dash
-    for (let i = 5; i <= 9; i++) {
+    // Chasm of 4 spikes on the floor under the laser dash (from 4.5 to 7.5)
+    for (let i = 4.5; i <= 7.5; i += 1.0) {
       hazards.push(createSpike(startX + BLOCK_SIZE * i, gy, 'trojan'));
     }
 
-    packets.push(createPacket(startX + BLOCK_SIZE * 6, gy - BLOCK_SIZE * 2));
-    packets.push(createPacket(startX + BLOCK_SIZE * 8, gy - BLOCK_SIZE * 2));
+    // Floating data packets along the laser beam
+    packets.push(createPacket(startX + BLOCK_SIZE * 5.0, gy - BLOCK_SIZE * 2.0));
+    packets.push(createPacket(startX + BLOCK_SIZE * 7.0, gy - BLOCK_SIZE * 2.0));
 
-    // Landing block platform
-    blocks.push(createBlock(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'DASH_END'));
+    // Safe open runway on floor from 8.5 onwards
+    // Cache platform at 11 with plenty of run-up and landing space
+    blocks.push(createBlock(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE, BLOCK_SIZE * 4, BLOCK_SIZE, 'DASH_CACHE'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 12.5, gy - BLOCK_SIZE * 2.2));
 
     return { length: BLOCK_SIZE * 18, hazards, blocks, pads, orbs, packets, portals };
   },
