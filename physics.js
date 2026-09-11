@@ -134,47 +134,78 @@ export function resolveBlockCollisions(player, tiles) {
       continue;
     }
 
-    // In Ship or Cube mode:
+    // ── SHIP MODE: Smooth sliding on floor & ceiling ──────────
+    if (mode === 'ship') {
+      const prevBottom = player.prevY + player.h;
+      const currBottom = py2;
+      const prevTop = player.prevY;
+      const currTop = py1;
+
+      // 1. Sliding along floor or flat top of blocks:
+      // When descending or resting on a surface (vy >= 0): clamp to surface.
+      // NEVER snap down when thrusting upwards (vy < 0)!
+      if (currBottom >= ty1 && (prevBottom <= ty1 + 16 || player.onGround) && player.vy >= 0) {
+        player.y = ty1 - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        continue;
+      }
+
+      // 2. Sliding along solid ceiling or underside of hanging blocks:
+      if (currTop <= ty2 && prevTop >= ty2 - 16 && player.vy <= 0) {
+        player.y = ty2;
+        player.vy = 0;
+        continue;
+      }
+
+      // 3. Side wall crash: hit the vertical front face of an elevated block/pillar
+      const vOverlap = py2 > ty1 + 14 && py1 < ty2 - 14;
+      if (vOverlap) {
+        return { crashed: true, reason: 'wall', tile };
+      }
+      continue;
+    }
+
+    // ── CUBE MODE: Standard Geometry Dash Cube Physics ────────
     if (grav === 1) {
       const prevBottom = player.prevY + player.h;
       const currBottom = py2;
 
-      // Generous 16px corner leniency & step-up landing:
-      // If the player landed from above OR their feet are within 16px of the top edge
-      // and they are not travelling steeply upward (player.vy >= -4.0), snap onto platform!
-      const isLandedFromAbove = prevBottom <= ty1 + 14 && currBottom >= ty1;
-      const isCornerStepUp = currBottom >= ty1 - 10 && currBottom <= ty1 + 16 && player.vy >= -4.0;
+      // 1. Landing on top from above (vy >= -1.0 so apex or descending)
+      const isLandedFromAbove = prevBottom <= ty1 + 14 && currBottom >= ty1 && player.vy >= -1.0;
+      // 2. Step-up corner forgiveness: only for non-floor elevated platforms!
+      const isCornerStepUp = tile.type !== 'floor' && currBottom >= ty1 - 8 && currBottom <= ty1 + 14 && player.vy >= -3.0;
 
       if (isLandedFromAbove || isCornerStepUp) {
         player.y = ty1 - player.h;
         player.vy = 0;
         player.onGround = true;
-        if (mode === 'cube') player.angle = snapAngle(player.angle);
+        player.angle = snapAngle(player.angle);
         continue;
       }
 
-      // Hitting side wall: ONLY fatal if feet are genuinely below the 16px corner tolerance!
-      const vOverlap = py2 > ty1 + 16 && py1 < ty2 - 4;
+      // Hitting side wall of block: ONLY fatal if feet are genuinely below corner tolerance!
+      const vOverlap = py2 > ty1 + 14 && py1 < ty2 - 4;
       if (vOverlap) {
         return { crashed: true, reason: 'wall', tile };
       }
     } else {
-      // Ceiling gravity
+      // Inverted ceiling gravity for Cube:
       const prevTop = player.prevY;
       const currTop = py1;
 
-      const isLandedFromBelow = prevTop >= ty2 - 14 && currTop <= ty2;
-      const isCornerStepDown = currTop <= ty2 + 10 && currTop >= ty2 - 16 && player.vy <= 4.0;
+      const isLandedFromBelow = prevTop >= ty2 - 14 && currTop <= ty2 && player.vy <= 1.0;
+      const isCornerStepDown = tile.type !== 'floor' && currTop <= ty2 + 8 && currTop >= ty2 - 14 && player.vy <= 3.0;
 
       if (isLandedFromBelow || isCornerStepDown) {
         player.y = ty2;
         player.vy = 0;
         player.onGround = true;
-        if (mode === 'cube') player.angle = snapAngle(player.angle);
+        player.angle = snapAngle(player.angle);
         continue;
       }
 
-      const vOverlap = py2 > ty1 + 4 && py1 < ty2 - 16;
+      const vOverlap = py2 > ty1 + 4 && py1 < ty2 - 14;
       if (vOverlap) {
         return { crashed: true, reason: 'wall', tile };
       }
@@ -283,10 +314,17 @@ export function checkPortalCollisions(player, portals) {
       // Mode Transformation Portals
       if (portal.portalType === 'mode_wave') {
         player.mode = 'wave';
+        player.onGround = false;
       } else if (portal.portalType === 'mode_ship') {
         player.mode = 'ship';
+        player.angle = 0;
+        player.onGround = false;
+        // Level flight: soften downward momentum so the ship glides forward smoothly
+        if (player.vy > 1.5) player.vy = 1.5;
+        if (player.vy < -6) player.vy = -6;
       } else if (portal.portalType === 'mode_cube') {
         player.mode = 'cube';
+        player.isDashing = false;
       }
 
       // Gravity Portals

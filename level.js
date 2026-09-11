@@ -61,11 +61,14 @@ export const PATTERNS = [
     hazards.push(createSpike(startX + BLOCK_SIZE * 5, gy, 'firewall'));
     hazards.push(createSpike(startX + BLOCK_SIZE * 6, gy, 'firewall'));
 
+    // Server platform tower
     blocks.push(createBlock(startX + BLOCK_SIZE * 8, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 4, BLOCK_SIZE * 2, 'SRV_ALPHA'));
     packets.push(createPacket(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 3.8));
-    hazards.push(createSpike(startX + BLOCK_SIZE * 10.5, gy - BLOCK_SIZE * 2, 'malware'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 3.0));
+    packets.push(createPacket(startX + BLOCK_SIZE * 11, gy - BLOCK_SIZE * 3.0));
 
-    return { length: BLOCK_SIZE * 16, hazards, blocks, pads, orbs, packets, portals };
+    // Clear landing strip after tower
+    return { length: BLOCK_SIZE * 18, hazards, blocks, pads, orbs, packets, portals };
   },
 
   // ── 3. PHASE 2: SHIP MODE PORTAL & ROCKET CAVERN ───────────
@@ -77,36 +80,37 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Enter Ship Mode! (Magenta portal)
-    portals.push(createPortal(startX + BLOCK_SIZE * 2, gy, 'mode_ship'));
+    // Real Geometry Dash Ship Entry:
+    // 1. Launch pad on ground vaults the cube into mid-air
+    pads.push(createPad(startX + BLOCK_SIZE * 3, gy, 'yellow'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 4.5, gy - BLOCK_SIZE * 2.0));
 
-    // Ceiling hazard spikes (pointing DOWN) along ceiling line (cy)
-    for (const bIdx of [3, 4, 10, 11, 18, 19]) {
-      hazards.push(createSpike(startX + BLOCK_SIZE * bIdx, cy, 'malware', -1));
-    }
+    // 2. Mid-air Magenta Ship Portal at apex of jump arc
+    portals.push(createPortal(startX + BLOCK_SIZE * 6, gy - BLOCK_SIZE * 1.5, 'mode_ship'));
 
-    // Floor hazard spikes (pointing UP) along ground line (gy)
-    for (const bIdx of [4, 5, 11, 12, 19, 20]) {
-      hazards.push(createSpike(startX + BLOCK_SIZE * bIdx, gy, 'firewall', 1));
-    }
+    // 3. Wide-open introductory flight corridor: NO spikes for 12 blocks!
+    // Centered packet trail lets player feel thruster controls
+    packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 2.8));
+    packets.push(createPacket(startX + BLOCK_SIZE * 12, gy - BLOCK_SIZE * 2.8));
+    packets.push(createPacket(startX + BLOCK_SIZE * 15, gy - BLOCK_SIZE * 2.8));
 
-    // Low obstacle 1: Server blocks (NET_PIPE) - fly up to avoid!
-    blocks.push(createBlock(startX + BLOCK_SIZE * 7, gy - BLOCK_SIZE * 1.6, BLOCK_SIZE * 3, BLOCK_SIZE * 1.6, 'NET_PIPE'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 8.5, gy - BLOCK_SIZE * 3.2));
+    // 4. Obstacle 1: Low Server Pillar (thrust up to clear)
+    blocks.push(createBlock(startX + BLOCK_SIZE * 18, gy - BLOCK_SIZE * 2, BLOCK_SIZE * 2.5, BLOCK_SIZE * 2, 'NET_PILLAR'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 19.2, gy - BLOCK_SIZE * 3.8));
 
-    // High obstacle 2: Ceiling conduit (TOP_PIPE) - glide down to avoid!
-    blocks.push(createBlock(startX + BLOCK_SIZE * 13, cy, BLOCK_SIZE * 3, BLOCK_SIZE * 2.2, 'TOP_PIPE'));
-    packets.push(createPacket(startX + BLOCK_SIZE * 14.5, gy - BLOCK_SIZE * 1.8));
+    // 5. Obstacle 2: Hanging Ceiling Conduit (release to glide under)
+    blocks.push(createBlock(startX + BLOCK_SIZE * 25, cy, BLOCK_SIZE * 2.5, BLOCK_SIZE * 2.2, 'TOP_PIPE'));
+    packets.push(createPacket(startX + BLOCK_SIZE * 26.2, gy - BLOCK_SIZE * 1.6));
 
-    // Mid obstacle 3: Sawblade hazard floating in the center of the cavern
-    hazards.push(createSaw(startX + BLOCK_SIZE * 17, gy - BLOCK_SIZE * 2.6, 28));
-    packets.push(createPacket(startX + BLOCK_SIZE * 17, gy - BLOCK_SIZE * 1.2));
-    packets.push(createPacket(startX + BLOCK_SIZE * 17, gy - BLOCK_SIZE * 4.0));
+    // 6. Obstacle 3: Central Sawblade (choice of high or low route)
+    hazards.push(createSaw(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 2.7, 26));
+    packets.push(createPacket(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 4.2));
+    packets.push(createPacket(startX + BLOCK_SIZE * 32, gy - BLOCK_SIZE * 1.4));
 
-    // Low obstacle 4: High pulse block
-    blocks.push(createBlock(startX + BLOCK_SIZE * 20, gy - BLOCK_SIZE * 1.8, BLOCK_SIZE * 2.5, BLOCK_SIZE * 1.8, 'GATE_02'));
+    // 7. Exit: Green Cube Portal in mid-air
+    portals.push(createPortal(startX + BLOCK_SIZE * 38, gy - BLOCK_SIZE * 1.5, 'mode_cube'));
 
-    return { length: BLOCK_SIZE * 24, hazards, blocks, pads, orbs, packets, portals };
+    return { length: BLOCK_SIZE * 42, hazards, blocks, pads, orbs, packets, portals };
   },
 
   // ── 4. GREEN DASH ORB SUPER-STREAK ──────────────────────────
@@ -118,16 +122,15 @@ export const PATTERNS = [
     const packets = [];
     const portals = [];
 
-    // Return to Cube mode across entire vertical column!
-    portals.push(createPortal(startX + BLOCK_SIZE * 1.5, gy, 'mode_cube'));
+    // Safe entry runway for cube landing from 0 to 4
+    // Green Dash Orb in mid-air: Hold jump to streak straight across!
+    orbs.push(createOrb(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 2, 'dash_green'));
 
     // Giant chasm with 5 spikes on the floor under the dash
     for (let i = 6; i <= 10; i++) {
       hazards.push(createSpike(startX + BLOCK_SIZE * i, gy, 'trojan'));
     }
 
-    // Green Dash Orb in mid-air: Hold jump to streak straight across!
-    orbs.push(createOrb(startX + BLOCK_SIZE * 5, gy - BLOCK_SIZE * 2, 'dash_green'));
     packets.push(createPacket(startX + BLOCK_SIZE * 7, gy - BLOCK_SIZE * 2));
     packets.push(createPacket(startX + BLOCK_SIZE * 9, gy - BLOCK_SIZE * 2));
 
