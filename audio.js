@@ -13,7 +13,8 @@ let bgmAudio = null;
 let analyserNode = null;
 let freqDataArray = null;
 
-let isMuted = false;
+// Sound defaults to OFF always per user preference
+let isMuted = true;
 let isPlayingMusic = false;
 let onBeatCallback = null;
 let beatInterval = null;
